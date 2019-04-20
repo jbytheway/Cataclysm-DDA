@@ -213,7 +213,12 @@ IF(MSVC)
 	endif()
 ELSE()
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra -Wall -std=c++11")
-	SET(CMAKE_CXX_FLAGS_DEBUG "-Og -g -D_GLIBCXX_DEBUG")
+	IF("${CMAKE_SYSTEM_NAME}" STREQUAL "Emscripten")
+		set(CMAKE_EXECUTABLE_SUFFIX ".html")
+		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g4 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2")
+	ELSE()
+		SET(CMAKE_CXX_FLAGS_DEBUG "-Og -g -D_GLIBCXX_DEBUG")
+	ENDIF()
 ENDIF()
 
 # Force out-of-source build
@@ -229,42 +234,44 @@ FIND_PACKAGE(Threads REQUIRED)
 
 # Check for build types and libraries
 IF(TILES)
-	# Find SDL, SDL_ttf & SDL_image for graphical install
-	MESSAGE(STATUS "Searching for SDL2 library --")
-	FIND_PACKAGE(SDL2)
-	IF(NOT SDL2_FOUND)
-        	MESSAGE(FATAL_ERROR
-            		"This project requires SDL2 to be installed to be compiled in graphical mode. Please install the SDL2 development libraries, or try compiling without the -DTILES=1 for a text only compilation.\nSee INSTALL file for details and more info\n"
-		)
-	ENDIF(NOT SDL2_FOUND)
+	IF(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Emscripten")
+		# Find SDL, SDL_ttf & SDL_image for graphical install
+		MESSAGE(STATUS "Searching for SDL2 library --")
+		FIND_PACKAGE(SDL2)
+		IF(NOT SDL2_FOUND)
+				MESSAGE(FATAL_ERROR
+						"This project requires SDL2 to be installed to be compiled in graphical mode. Please install the SDL2 development libraries, or try compiling without the -DTILES=1 for a text only compilation.\nSee INSTALL file for details and more info\n"
+			)
+		ENDIF(NOT SDL2_FOUND)
 
-	IF (NOT DYNAMIC_LINKING)
-		# SDL, SDL_Image, SDL_ttf deps are required for static build
-		MESSAGE(STATUS "Searching for SDL deps libraries --")
-		FIND_PACKAGE(Freetype REQUIRED)
-		FIND_PACKAGE(PNG REQUIRED)
-		FIND_PACKAGE(JPEG REQUIRED)
-		FIND_PACKAGE(ZLIB REQUIRED)
-		FIND_PACKAGE(BZip2 REQUIRED)
-	ENDIF (NOT DYNAMIC_LINKING)
+		IF (NOT DYNAMIC_LINKING)
+			# SDL, SDL_Image, SDL_ttf deps are required for static build
+			MESSAGE(STATUS "Searching for SDL deps libraries --")
+			FIND_PACKAGE(Freetype REQUIRED)
+			FIND_PACKAGE(PNG REQUIRED)
+			FIND_PACKAGE(JPEG REQUIRED)
+			FIND_PACKAGE(ZLIB REQUIRED)
+			FIND_PACKAGE(BZip2 REQUIRED)
+		ENDIF (NOT DYNAMIC_LINKING)
 
-	MESSAGE(STATUS "Searching for SDL2_image library --")
+		MESSAGE(STATUS "Searching for SDL2_image library --")
 
-	MESSAGE(STATUS "Searching for SDL2_TTF library --")
-	FIND_PACKAGE(SDL2_ttf)
-		IF(NOT SDL2_TTF_FOUND)
-		MESSAGE(FATAL_ERROR
-			"This project requires SDL2_ttf to be installed to be compiled in graphical mode. Please install the SDL2_ttf development libraries, or try compiling without the -DTILES=1 for a text only compilation.\nSee INSTALL file for details and moreinfo\n"
-		)
-	ENDIF(NOT SDL2_TTF_FOUND)
+		MESSAGE(STATUS "Searching for SDL2_TTF library --")
+		FIND_PACKAGE(SDL2_ttf)
+			IF(NOT SDL2_TTF_FOUND)
+			MESSAGE(FATAL_ERROR
+				"This project requires SDL2_ttf to be installed to be compiled in graphical mode. Please install the SDL2_ttf development libraries, or try compiling without the -DTILES=1 for a text only compilation.\nSee INSTALL file for details and moreinfo\n"
+			)
+		ENDIF(NOT SDL2_TTF_FOUND)
 
-	MESSAGE(STATUS "Searching for SDL2_image library --\n")
-	FIND_PACKAGE(SDL2_image)
-	IF(NOT SDL2_IMAGE_FOUND)
-        	MESSAGE(FATAL_ERROR
-			"This project requires SDL2_image to be installed to be compiled in graphical mode. Please install the SDL2_image development libraries, or try compiling without the -DTILES=1 for a text only compilation.\nSee INSTALL file for details and more info\n"
-		)
-	ENDIF(NOT SDL2_IMAGE_FOUND)
+		MESSAGE(STATUS "Searching for SDL2_image library --\n")
+		FIND_PACKAGE(SDL2_image)
+		IF(NOT SDL2_IMAGE_FOUND)
+				MESSAGE(FATAL_ERROR
+				"This project requires SDL2_image to be installed to be compiled in graphical mode. Please install the SDL2_image development libraries, or try compiling without the -DTILES=1 for a text only compilation.\nSee INSTALL file for details and more info\n"
+			)
+		ENDIF(NOT SDL2_IMAGE_FOUND)
+	ENDIF()
 	ADD_DEFINITIONS(-DTILES)
 ENDIF(TILES)
 

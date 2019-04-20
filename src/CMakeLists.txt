@@ -54,6 +54,13 @@ IF(TILES)
 	target_link_libraries(cataclysm-tiles libcataclysm-tiles)
 	target_compile_definitions(libcataclysm-tiles PUBLIC TILES )
 
+	IF ("${CMAKE_SYSTEM_NAME}" STREQUAL "Emscripten")
+		# Would be better to use target_link_options, but that requires a newer
+		# CMake version.
+		set_target_properties(cataclysm-tiles
+			PROPERTIES LINK_FLAGS "--preload-file ${CMAKE_SOURCE_DIR}/data@/data --preload-file ${CMAKE_SOURCE_DIR}/gfx@/gfx")
+	ENDIF()
+
 	IF (LOCALIZE)
 		target_include_directories(libcataclysm-tiles PUBLIC
 			${LIBINTL_INCLUDE_DIR}
